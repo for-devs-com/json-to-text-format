@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/pharmacylevelbenefit/v1")
+@RequestMapping("/api/v1")
 @Slf4j
 public class Controller {
 
 //    @PostMapping(path= "/cit-job", consumes = "application/json")
-//    public ResponseEntity convertJsonToFlatFile(@RequestBody HashMap<String, Object>[] body ) {
+//    public ResponseEntity convertJsonToFlatFile(@RequestBody HashMap<String, Object>[] body ) e{
 //        return ResponseEntity.ok(Service.convertJsonToFlatFile(body));
 //    }
 
@@ -33,14 +33,28 @@ public class Controller {
 //            log.info(idNation);
 //        });
 
+//        System.out.println();
+//        String jsonHiWorld = "{\"message\":\"Hi\",\"place\":{\"name\":\"World!\"}}\"";
+//        String message = mapper.readTree(jsonHiWorld).at("/message").asText();
+//        String place = mapper.readTree(jsonHiWorld).at("/place/name").asText();
+//        System.out.println(message + " " + place); // print "Hi World!"
+
+
         jsonCitRules.forEach( jsonCitRule -> {
+
             log.info("jsonCitRule : {} ",  jsonCitRule );
 
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = null;
+            JsonNode jsonNode;
             try {
                 jsonNode = objectMapper.readTree(String.valueOf(jsonCitRule));
-                System.out.println(jsonNode.get("Nation").asText());
+                String nationId = jsonNode.get("ID Nation").asText();
+                String nation = jsonNode.get("ID Nation").asText();
+
+
+                String citRule = String.format("%10s %20s", nationId, nation);
+
+                log.info(citRule);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
