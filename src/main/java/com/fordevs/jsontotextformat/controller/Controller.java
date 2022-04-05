@@ -31,6 +31,8 @@ public class Controller {
 
         List<String> citRulesList = new ArrayList<>();
         String nationId = null;
+        String nation = null;
+        String male = null;
 
         for (JsonNode jsonCitRule : jsonCitRules) {
             log.info("jsonCitRule : {} ", jsonCitRule);
@@ -38,9 +40,9 @@ public class Controller {
             JsonNode rootJsonNode;
             try {
                 rootJsonNode = objectMapper.readTree(String.valueOf(jsonCitRule));
+                //parse data to variables
                 nationId = rootJsonNode.at("/ID Nation").asText();
-                String nation = rootJsonNode.at("/Nation").asText();
-                String male = null;
+                nation = rootJsonNode.at("/Nation").asText();
                 ArrayNode genderPopulation = (ArrayNode) objectMapper.readTree(String.valueOf(jsonCitRule)).at("/Gender Population");
                 if (genderPopulation.isArray()) {
                     for (JsonNode genderPopulationElement : genderPopulation) {
@@ -49,9 +51,10 @@ public class Controller {
                     }
                 }
 
-                String citRule = String.format("%10s %30s %15s", nationId, nation, male);
+                String citRule = String.format("%10s %30s %15s\n", nationId, nation, male);
                 log.info(citRule);
                 citRulesList.add(citRule);
+
 
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -59,12 +62,12 @@ public class Controller {
         }
         log.info(String.valueOf(citRulesList));
 
-        FileWriter writer = new FileWriter("src/main/resources/reports/report_" + nationId + ".txt");
+        FileWriter fileWriter = new FileWriter("src/main/resources/reports/report_" + nationId + ".txt");
         for (String citRule : citRulesList) {
 //
-            writer.write(citRule);
+            fileWriter.write(citRule );
         }
-        writer.close();
+        fileWriter.close();
 
         //TODO:SFTP to MainFrame
         //TODO: After SFTP to Mainframe delete text report file
