@@ -1,7 +1,9 @@
 package com.fordevs.jsontotextformat.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,9 +15,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/pharmacylevelbenefit/v1/partialintent")
+@RequestMapping("/api")
 @Slf4j
 public class CitController {
 
@@ -23,15 +26,9 @@ public class CitController {
     public void citMainframeConnector(@RequestBody JsonNode jsonNode) {
 
         try {
-            //TODO:Make this configurable https://stackoverflow.com/questions/26275736/how-to-pass-a-mapstring-string-with-application-properties
-            //TODO: Use MultiMapValue https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/MultiValuedMap.html
-            StringBuilder citRules = new StringBuilder(5000);
-            // LinkedListMultimap<String, String> keyValueMultiMap = LinkedListMultimap.create();
-
-
-            for (JsonNode jsonNodeCitRule : jsonNode) {
-                getKeyValueMultiMapFromJson(jsonNodeCitRule);
-                // citRules.append();
+            StringBuilder citRules = new StringBuilder();
+            for (JsonNode citRule : jsonNode) {
+                citRules = getFieldsAndValuesFromJsonNode(citRule);
             }
             System.out.println(citRules);
             bufferedWriter(citRules);
@@ -43,144 +40,149 @@ public class CitController {
         }
     }
 
-
-    //get all field values per each cit rule
-    public StringBuilder getKeyValueMultiMapFromJson(JsonNode jsonNode) throws IOException {
-
-        LinkedListMultimap<String, String> fieldWidthMultiMap = LinkedListMultimap.create();
-        //TODO:Make this configurable https://stackoverflow.com/questions/26275736/how-to-pass-a-mapstring-string-with-application-properties
-        //TODO: Use MultiMapValue https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/MultiValuedMap.html
-
-        fieldWidthMultiMap.putAll("flowId", Arrays.asList("36", "1"));  //offset = 0
-        fieldWidthMultiMap.putAll("ptmRequestId", Arrays.asList("10", "1"));  //offset = 0 + 36 + 1 + 1 = 38
-        fieldWidthMultiMap.putAll("operId", Arrays.asList("8", "1"));   //offset 38 + 8 + 1 + 1 = 38  offset = previousOffset + fieldWidth + separatorWidth + 1
-        fieldWidthMultiMap.putAll("recordCount", Arrays.asList("6", "1"));
-        fieldWidthMultiMap.putAll("validFlagFile", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("categoryF", Arrays.asList("14", "1"));
-        fieldWidthMultiMap.putAll("messageF", Arrays.asList("500", "1"));
-        fieldWidthMultiMap.putAll("userActionF", Arrays.asList("256", "1"));
-        fieldWidthMultiMap.putAll("procsStageF", Arrays.asList("24", "1"));
-        fieldWidthMultiMap.putAll("sourceF", Arrays.asList("6", "1"));
-        fieldWidthMultiMap.putAll("setUpChangeNumber", Arrays.asList("2", "1"));
-        fieldWidthMultiMap.putAll("rowNumber", Arrays.asList("10", "1"));
-        fieldWidthMultiMap.putAll("entityType", Arrays.asList("25", "1"));
-        fieldWidthMultiMap.putAll("entityOpId", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("entityAgn", Arrays.asList("25", "1"));
-        fieldWidthMultiMap.putAll("eastGrpOpId", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("srceEntity", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("srceEntityGr", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("srceCopay", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("entityEffDate", Arrays.asList("10", "1"));
-        fieldWidthMultiMap.putAll("channelCde", Arrays.asList("6", "1"));
-        fieldWidthMultiMap.putAll("parentType", Arrays.asList("2", "1"));
-        fieldWidthMultiMap.putAll("parentName", Arrays.asList("18", "1"));
-        fieldWidthMultiMap.putAll("parentAgn", Arrays.asList("10", "1"));
-        fieldWidthMultiMap.putAll("operation", Arrays.asList("1", "1"));
-        fieldWidthMultiMap.putAll("clientExclInd", Arrays.asList("1", "1"));
-        fieldWidthMultiMap.putAll("exclEntityTypCde", Arrays.asList("25", ""));
-        fieldWidthMultiMap.putAll("exclEntity", Arrays.asList("18", ""));
-        fieldWidthMultiMap.putAll("exclEntityAgn", Arrays.asList("10", ""));
-        fieldWidthMultiMap.putAll("exclEastGroup", Arrays.asList("18", ""));
-        fieldWidthMultiMap.putAll("networkType", Arrays.asList("3", ""));
-        fieldWidthMultiMap.putAll("networkId", Arrays.asList("15", ""));
-        fieldWidthMultiMap.putAll("chain", Arrays.asList("5", ""));
-        fieldWidthMultiMap.putAll("chainName", Arrays.asList("35", ""));
-        fieldWidthMultiMap.putAll("npiNumber", Arrays.asList("10", ""));
-        fieldWidthMultiMap.putAll("pharName", Arrays.asList("35", ""));
-        fieldWidthMultiMap.putAll("state", Arrays.asList("2", ""));
-        fieldWidthMultiMap.putAll("networkExcl", Arrays.asList("38")); //offset = previousOffset + fieldWidth + separatorWidth + 1
-        fieldWidthMultiMap.putAll("networkExclInd", Arrays.asList("1", ""));
-        fieldWidthMultiMap.putAll("exclNetworkType", Arrays.asList("3", ""));
-        fieldWidthMultiMap.putAll("exclNetworkId", Arrays.asList("15", ""));
-        fieldWidthMultiMap.putAll("exclChain", Arrays.asList("5", ""));
-        fieldWidthMultiMap.putAll("exclNpiNumber", Arrays.asList("10", ""));
-        fieldWidthMultiMap.putAll("exclState", Arrays.asList("2", ""));
-        fieldWidthMultiMap.putAll("productType", Arrays.asList("20", ""));
-        fieldWidthMultiMap.putAll("productAttribute", Arrays.asList("20", ""));
-        fieldWidthMultiMap.putAll("productValue", Arrays.asList("20", ""));
-        fieldWidthMultiMap.putAll("hierarchyType", Arrays.asList("1", ""));
-        fieldWidthMultiMap.putAll("intentEndDate", Arrays.asList("10", ""));
-        fieldWidthMultiMap.putAll("validFlagRec", Arrays.asList("1", ""));
-        fieldWidthMultiMap.putAll("severity", Arrays.asList("18", ""));
-        fieldWidthMultiMap.putAll("category", Arrays.asList("14", ""));
-        fieldWidthMultiMap.putAll("message", Arrays.asList("500", ""));
-        fieldWidthMultiMap.putAll("userAction", Arrays.asList("256", ""));
-        fieldWidthMultiMap.putAll("procsStage", Arrays.asList("24", ""));
-        fieldWidthMultiMap.putAll("source", Arrays.asList("6", ""));
-
-        StringBuilder citRuleRow = new StringBuilder();
-        //LinkedListMultimap<String, String> multiMap = LinkedListMultimap.create();
-        //ObjectMapper objectMapper = new ObjectMapper();
-        //get all the fields in this JsonNode
-        if (jsonNode.isObject()) {
-            Iterator<String> fieldNames = jsonNode.fieldNames();
-            String fieldName;
-            String fieldWidth = null;
-            String separatorWidth = null;
-
-            while (fieldNames.hasNext()) {
-
-                fieldName = fieldNames.next();
-
-                JsonNode jsonNodeValue = jsonNode.get(fieldName);
-                if (jsonNodeValue.isArray()) {
-                    //citRule.append(setBufferSize(fieldName));
-//                    List<String> list = objectMapper.convertValue(jsonNodeValue, ArrayList.class);
-//                    multiMap.putAll(fieldName, list);
-
-                    int offset = 0;
-                    if (fieldWidthMultiMap.containsKey(fieldName)) {
-                        offset = Integer.parseInt(fieldWidthMultiMap.get(fieldName).get(0));
-                    }
-
-                    StringBuilder arrayValues = new StringBuilder();
-                    for (JsonNode arrayNodeFieldNames : jsonNodeValue) {
-                        Iterator<String> arrayFieldNames = arrayNodeFieldNames.fieldNames();
-                        String arrayfieldName;
-                        String arrayFieldValue;
-                        while (arrayFieldNames.hasNext()) {
-                            arrayfieldName = arrayFieldNames.next();
-                            JsonNode arrayFieldValueNode = arrayNodeFieldNames.get(arrayfieldName);
-                            arrayFieldValue = arrayFieldValueNode.asText();
-                            log.info("fieldName  : {}", arrayfieldName);
-                            log.info("fieldValue = {}", arrayFieldValue);
-                            if (fieldWidthMultiMap.containsKey(arrayfieldName)) { //networkExl
-                                fieldWidth = fieldWidthMultiMap.get(arrayfieldName).get(0);
-                                separatorWidth = fieldWidthMultiMap.get(arrayfieldName).get(1);
-                            }
-                            arrayValues.append(formatFieldValue(arrayfieldName, arrayFieldValue, fieldWidth, separatorWidth));
-                        }
-                    }
-                    citRuleRow.insert(offset, arrayValues);
-                } else {
-                    String fieldValue = jsonNodeValue.asText();
-
-                    if (fieldWidthMultiMap.containsKey(fieldName)) { //networkExl
-                         fieldWidth = fieldWidthMultiMap.get(fieldName).get(0);
-                        separatorWidth = fieldWidthMultiMap.get(fieldName).get(1);
-                    }
-                    citRuleRow.append(formatFieldValue(fieldName, fieldValue, fieldWidth, separatorWidth));
-                }
+    public void calculateOffsets(ListMultimap<String, String> multimap) {
+        Integer offset = 0;
+        Integer separatorWidth;
+        Integer columnWidth;
+        Integer totalBytes = 0;
+        for (String key : multimap.keySet()) {
+            multimap.put(key, String.valueOf(offset));
+            columnWidth = Integer.parseInt(multimap.get(key).get(0));
+            if (multimap.get(key).get(1).equals("")) {
+                separatorWidth = 0;
+            } else {
+                separatorWidth = Integer.parseInt(multimap.get(key).get(1));
             }
-            //citRule.append("\n");
+            offset = columnWidth + separatorWidth + offset;
+            totalBytes = totalBytes + offset;
         }
-        //return citRule;
-        return citRuleRow;
     }
 
-    public StringBuilder formatFieldValue(String fieldName, String fieldValue, String fieldWidth, String separatorWidth) {
+    //get all field values per each cit rule
+    public StringBuilder getFieldsAndValuesFromJsonNode(JsonNode jsonNode) throws IOException {
 
-        //LinkedListMultimap<String, Integer> fieldWidthMultiMap = LinkedListMultimap.create();
-//        LinkedHashMap<String, List<String>> fieldWidths = new LinkedHashMap<>();
-//
-//        fieldWidths.put("flowId", Arrays.asList("36", "1"));
+        LinkedListMultimap<String, String> fieldLayoutProperties = LinkedListMultimap.create();
+        //ListMultimap<String, String> fieldLayoutProperties = ArrayListMultimap.create();
         //TODO:Make this configurable https://stackoverflow.com/questions/26275736/how-to-pass-a-mapstring-string-with-application-properties
-        //TODO: Use MultiMapValue https://commons.apache.org/proper/commons-collections/apidocs/org/apache/commons/collections4/MultiValuedMap.html
+        //TODO: Use MultiMapValue https://commons.apache.orag/proper/commons-collections/apidocs/org/apache/commons/collections4/MultiValuedMap.html
+        fieldLayoutProperties.putAll("flowId", Arrays.asList("36", "1"));  //offset = 0
+        fieldLayoutProperties.putAll("ptmRequestId", Arrays.asList("10", "1"));  //offset = 0 + 36 + 1 + 1 = 38
+        fieldLayoutProperties.putAll("operId", Arrays.asList("8", "1"));   //offset 38 + 8 + 1 + 1 = 48  offset = previousOffset + fieldWidth + separatorWidth + 1
+        fieldLayoutProperties.putAll("recordCount", Arrays.asList("6", "1"));
+        fieldLayoutProperties.putAll("validFlagFile", Arrays.asList("1", "1"));
+        fieldLayoutProperties.putAll("severityF", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("categoryF", Arrays.asList("14", "1"));
+        fieldLayoutProperties.putAll("messageF", Arrays.asList("500", "1"));
+        fieldLayoutProperties.putAll("userActionF", Arrays.asList("256", "1"));
+        fieldLayoutProperties.putAll("procsStageF", Arrays.asList("24", "1"));
+        fieldLayoutProperties.putAll("sourceF", Arrays.asList("6", "1"));
+        fieldLayoutProperties.putAll("setUpChangeNumber", Arrays.asList("2", "1"));
+        fieldLayoutProperties.putAll("rowNumber", Arrays.asList("10", "1"));
+        fieldLayoutProperties.putAll("entityType", Arrays.asList("25", "1"));
+        fieldLayoutProperties.putAll("entityOpId", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("entityAgn", Arrays.asList("25", "1"));
+        fieldLayoutProperties.putAll("eastGrpOpId", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("srceEntity", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("srceEntityGr", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("srceCopay", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("entityEffDate", Arrays.asList("10", "1"));
+        fieldLayoutProperties.putAll("channelCde", Arrays.asList("6", "1"));
+        fieldLayoutProperties.putAll("parentType", Arrays.asList("2", "1"));
+        fieldLayoutProperties.putAll("parentName", Arrays.asList("18", "1"));
+        fieldLayoutProperties.putAll("parentAgn", Arrays.asList("10", "1"));
+        fieldLayoutProperties.putAll("operation", Arrays.asList("1", "1"));
+        fieldLayoutProperties.putAll("clientExclInd", Arrays.asList("1", "1"));
+        fieldLayoutProperties.putAll("clientExcl", Arrays.asList("105", "")); //this is an array
+//        fieldLayoutProperties.putAll("exclEntityTypCde", Arrays.asList("2", ""));
+//        fieldLayoutProperties.putAll("exclEntity", Arrays.asList("18", ""));
+//        fieldLayoutProperties.putAll("exclEntityAgn", Arrays.asList("10", ""));
+//        fieldLayoutProperties.putAll("exclEastGroup", Arrays.asList("18", ""));
+        fieldLayoutProperties.putAll("networkType", Arrays.asList("3", ""));
+        fieldLayoutProperties.putAll("networkId", Arrays.asList("15", ""));
+        fieldLayoutProperties.putAll("chain", Arrays.asList("5", ""));
+        fieldLayoutProperties.putAll("chainName", Arrays.asList("35", ""));
+        fieldLayoutProperties.putAll("npiNumber", Arrays.asList("10", ""));
+        fieldLayoutProperties.putAll("pharName", Arrays.asList("35", ""));
+        fieldLayoutProperties.putAll("state", Arrays.asList("2", ""));
+        fieldLayoutProperties.putAll("networkExcl", Arrays.asList("360", "")); // array
+//        fieldLayoutProperties.putAll("exclEntityTypCde", Arrays.asList("2", ""));
+//        fieldLayoutProperties.putAll("exclEntity", Arrays.asList("18", ""));
+//        fieldLayoutProperties.putAll("exclEntityAgn", Arrays.asList("10", ""));
+//        fieldLayoutProperties.putAll("exclEastGroup", Arrays.asList("18", ""));
+        fieldLayoutProperties.putAll("productType", Arrays.asList("20", ""));
+        fieldLayoutProperties.putAll("productDetail", Arrays.asList("120", "")); //array
+//        fieldLayoutProperties.putAll("productAttribute", Arrays.asList("20", ""));
+//        fieldLayoutProperties.putAll("productValue", Arrays.asList("20", ""));
+        fieldLayoutProperties.putAll("hierarchyType", Arrays.asList("1", ""));
+        fieldLayoutProperties.putAll("intentEndDate", Arrays.asList("10", ""));
+        fieldLayoutProperties.putAll("validFlagRec", Arrays.asList("1", ""));
+        fieldLayoutProperties.putAll("severity", Arrays.asList("18", ""));
+        fieldLayoutProperties.putAll("category", Arrays.asList("14", ""));
+        fieldLayoutProperties.putAll("message", Arrays.asList("500", ""));
+        fieldLayoutProperties.putAll("userAction", Arrays.asList("256", ""));
+        fieldLayoutProperties.putAll("procsStage", Arrays.asList("24", ""));
+        fieldLayoutProperties.putAll("source", Arrays.asList("6", ""));
+        calculateOffsets(fieldLayoutProperties);
 
-        StringBuilder formatFieldValue = new StringBuilder();
+        LinkedListMultimap<String, String> arrayFieldLayoutProperties = LinkedListMultimap.create();
+        //ListMultimap<String, String> arrayFieldLayoutProperties = ArrayListMultimap.create();
+        arrayFieldLayoutProperties.putAll("exclEntityTypCde", Arrays.asList("2", ""));
+        arrayFieldLayoutProperties.putAll("exclEntity", Arrays.asList("18", ""));
+        arrayFieldLayoutProperties.putAll("exclEntityAgn", Arrays.asList("10", ""));
+        arrayFieldLayoutProperties.putAll("exclEastGroup", Arrays.asList("18", ""));
+
+        arrayFieldLayoutProperties.putAll("exclNetworkType", Arrays.asList("3", ""));
+        arrayFieldLayoutProperties.putAll("exclNetworkId", Arrays.asList("15", ""));
+        arrayFieldLayoutProperties.putAll("exclChain", Arrays.asList("5", ""));
+        arrayFieldLayoutProperties.putAll("exclNpiNumber", Arrays.asList("10", ""));
+        arrayFieldLayoutProperties.putAll("exclState", Arrays.asList("2", ""));
+
+        arrayFieldLayoutProperties.putAll("productAttribute", Arrays.asList("20", ""));
+        arrayFieldLayoutProperties.putAll("productValue", Arrays.asList("20", ""));
+
+        StringBuilder ruleRow = new StringBuilder();
+        Iterator<Map.Entry<String, JsonNode>> fields = jsonNode.fields();
+
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            String key = field.getKey();
+            JsonNode value = field.getValue();
+
+            if (value.isArray()) {
+                for (JsonNode arrayElement : value) {
+                    Iterator<Map.Entry<String, JsonNode>> arrayFields = arrayElement.fields();
+                    while (arrayFields.hasNext()) {
+                        Map.Entry<String, JsonNode> arrayField = arrayFields.next();
+                        String arrayKey = arrayField.getKey();
+                        String arrayValue = arrayField.getValue().asText();
+                        if (arrayFieldLayoutProperties.containsKey(arrayKey)) {
+                            String columnWidth = arrayFieldLayoutProperties.get(arrayKey).get(0);
+                            String columnGapWidth = arrayFieldLayoutProperties.get(arrayKey).get(1);
+                            String ruleField = String.valueOf(formatRuleField(arrayKey, arrayValue, columnWidth, columnGapWidth));
+                            ruleRow.append(ruleField);
+                        }
+                    }
+                }
+            } else {
+                if (fieldLayoutProperties.containsKey(key)) {
+                    String columnWidth = fieldLayoutProperties.get(key).get(0);
+                    String columnGapWidth = fieldLayoutProperties.get(key).get(1);
+                    Integer offset = Integer.valueOf(fieldLayoutProperties.get(key).get(2));
+                    String ruleField = String.valueOf(formatRuleField(key, value.asText(), columnWidth, columnGapWidth));
+                    ruleRow.insert(offset, ruleField);
+                }
+            }
+        }
+        ruleRow.append("\n");
+        return ruleRow;
+    }
+
+    public StringBuilder formatRuleField(String key, String value, String keyColumnWidth, String keySeparatorWidth) {
+
+        StringBuilder ruleField = new StringBuilder();
         //String.format specifiers: %[flags][width][.precision][argsize] typechar.
-        formatFieldValue.append(String.format("%" + fieldWidth + "s %" + separatorWidth + "s", fieldValue, ""));
-        return formatFieldValue;
+        ruleField.append(String.format("%" + keyColumnWidth + "s %" + keySeparatorWidth + "s", value, ""));
+        return ruleField;
     }
 
 
@@ -203,163 +205,3 @@ public class CitController {
     }
 }
 
-//    public StringBuilder setBufferSize(String key) {
-//        Map<String, Integer> map = new HashMap<>();
-//        map.put("networkExcl", 105);
-//        map.put("clientExcl", 380);
-//        map.put("productDetail", 120);
-//
-//        StringBuilder stringBuilder = new StringBuilder();
-//
-//        if (map.containsKey(key)) {
-//            Integer bufferSize = map.get(key);
-//            stringBuilder.setLength(bufferSize);
-//        }
-//
-//        return stringBuilder;
-//    }
-
-
-//            if (fieldName.equals("flowId") ||
-//                    fieldName.equals("ptmRequestId") ||
-//                    fieldName.equals("operId") ||
-//                    fieldName.equals("recordCount") ||
-//                    fieldName.equals("validFlagFile") ||
-//                    fieldName.equals("severityF") ||
-//                    fieldName.equals("categoryF") ||
-//                    fieldName.equals("messageF") ||
-//                    fieldName.equals("userActionF") ||
-//                    fieldName.equals("procsStageF") ||
-//                    fieldName.equals("clientExclInd")) {
-//                fillerWidth = "1";
-//                formatFieldValue.append(String.format("%" + fieldWidth + "s %" + fillerWidth + "s", fieldValue, filler));
-//            } else if (fieldName.equals("sourceF")) {
-//                fillerWidth = "1252";
-//                formatFieldValue.append(String.format("%" + fieldWidth + "s %" + fillerWidth + "s", fieldValue, filler));
-//            } else {
-//                formatFieldValue.append(String.format("%" + fieldWidth + "s", fieldValue));
-//            }
-
-//        for( Object key : fieldWidthMultiMap.keySet()){
-//            log.info("key: " + key.toString() + );
-//
-
-//            int offset = fieldWidthMultiMap.get(key).get(0);
-//            String fieldWidth = String.valueOf(fieldWidthMultiMap.get(key).get(1));
-//            String separatorWidth = String.valueOf(fieldWidthMultiMap.get(key).get(2));
-//            Integer bufferSize = Integer.valueOf(fieldWidth) + Integer.valueOf(separatorWidth);
-//formatFieldValue.setLength(bufferSize);
-
-//        fieldWidthMultiMap.putAll("flowId", Arrays.asList(0, 36, 1));
-//                fieldWidthMultiMap.putAll("ptmRequestId", Arrays.asList(38, 10, 1));
-//                fieldWidthMultiMap.putAll("operId", Arrays.asList(50, 8, 1));
-//                fieldWidthMultiMap.putAll("recordCount", Arrays.asList(60, 6, 1));
-//                fieldWidthMultiMap.putAll("validFlagFile", Arrays.asList(68, 18, 1));
-//                fieldWidthMultiMap.putAll("categoryF", Arrays.asList(88, 14, 1));
-//                fieldWidthMultiMap.putAll("messageF", Arrays.asList(104, 500, 1));
-//                fieldWidthMultiMap.putAll("userActionF", Arrays.asList(606, 256, 1));
-//                fieldWidthMultiMap.putAll("procsStageF", Arrays.asList(864, 24, 1));
-//                fieldWidthMultiMap.putAll("sourceF", Arrays.asList(890, 6, 1));
-//                fieldWidthMultiMap.putAll("setUpChangeNumber", Arrays.asList(2, 1));
-//                fieldWidthMultiMap.putAll("rowNumber", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("entityType", Arrays.asList(25, 1));
-//                fieldWidthMultiMap.putAll("entityOpId", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("entityAgn", Arrays.asList(25, 1));
-//                fieldWidthMultiMap.putAll("eastGrpOpId", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("srceEntity", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("srceEntityGr", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("srceCopay", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("entityEffDate", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("channelCde", Arrays.asList(6, 1));
-//                fieldWidthMultiMap.putAll("parentType", Arrays.asList(2, 1));
-//                fieldWidthMultiMap.putAll("parentName", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("parentAgn", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("operation", Arrays.asList(1, 1));
-//                fieldWidthMultiMap.putAll("clientExclInd", Arrays.asList(1, 1));
-//                fieldWidthMultiMap.putAll("exclEntityTypCde", Arrays.asList(25, 0));
-//                fieldWidthMultiMap.putAll("exclEntity", Arrays.asList(18, 0));
-//                fieldWidthMultiMap.putAll("exclEntityAgn", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("exclEastGroup", Arrays.asList(18, 0));
-//                fieldWidthMultiMap.putAll("networkType", Arrays.asList(3, 0));
-//                fieldWidthMultiMap.putAll("networkId", Arrays.asList(15, 0));
-//                fieldWidthMultiMap.putAll("chain", Arrays.asList(5, 0));
-//                fieldWidthMultiMap.putAll("chainName", Arrays.asList(35, 0));
-//                fieldWidthMultiMap.putAll("npiNumber", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("pharName", Arrays.asList(35, 0));
-//                fieldWidthMultiMap.putAll("state", Arrays.asList(2, 0));
-//                fieldWidthMultiMap.putAll("networkExcl", Arrays.asList(380, 0));
-//                fieldWidthMultiMap.putAll("networkExclInd", Arrays.asList(1, 0));
-//                fieldWidthMultiMap.putAll("exclNetworkType", Arrays.asList(3, 0));
-//                fieldWidthMultiMap.putAll("exclNetworkId", Arrays.asList(15, 0));
-//                fieldWidthMultiMap.putAll("exclChain", Arrays.asList(5, 0));
-//                fieldWidthMultiMap.putAll("exclNpiNumber", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("exclState", Arrays.asList(2, 0));
-//                fieldWidthMultiMap.putAll("productType", Arrays.asList(20, 0));
-//                fieldWidthMultiMap.putAll("productAttribute", Arrays.asList(20, 0));
-//                fieldWidthMultiMap.putAll("productValue", Arrays.asList(20, 0));
-//                fieldWidthMultiMap.putAll("hierarchyType", Arrays.asList(1, 0));
-//                fieldWidthMultiMap.putAll("intentEndDate", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("validFlagRec", Arrays.asList(1, 0));
-//                fieldWidthMultiMap.putAll("severity", Arrays.asList(18, 0));
-//                fieldWidthMultiMap.putAll("category", Arrays.asList(14, 0));
-//                fieldWidthMultiMap.putAll("message", Arrays.asList(500, 0));
-//                fieldWidthMultiMap.putAll("userAction", Arrays.asList(256, 0));
-//                fieldWidthMultiMap.putAll("procsStage", Arrays.asList(24, 0));
-//                fieldWidthMultiMap.putAll("source", Arrays.asList(6, 0));
-
-//        fieldWidthMultiMap.putAll("flowId", Arrays.asList(36, 1));
-//                fieldWidthMultiMap.putAll("ptmRequestId", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("operId", Arrays.asList(8, 1));
-//                fieldWidthMultiMap.putAll("recordCount", Arrays.asList(6, 1));
-//                fieldWidthMultiMap.putAll("validFlagFile", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("categoryF", Arrays.asList(14, 1));
-//                fieldWidthMultiMap.putAll("messageF", Arrays.asList(500, 1));
-//                fieldWidthMultiMap.putAll("userActionF", Arrays.asList(256, 1));
-//                fieldWidthMultiMap.putAll("procsStageF", Arrays.asList(864, 24, 1));
-//                fieldWidthMultiMap.putAll("sourceF", Arrays.asList(890, 6, 1));
-//                fieldWidthMultiMap.putAll("setUpChangeNumber", Arrays.asList(2, 1));
-//                fieldWidthMultiMap.putAll("rowNumber", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("entityType", Arrays.asList(25, 1));
-//                fieldWidthMultiMap.putAll("entityOpId", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("entityAgn", Arrays.asList(25, 1));
-//                fieldWidthMultiMap.putAll("eastGrpOpId", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("srceEntity", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("srceEntityGr", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("srceCopay", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("entityEffDate", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("channelCde", Arrays.asList(6, 1));
-//                fieldWidthMultiMap.putAll("parentType", Arrays.asList(2, 1));
-//                fieldWidthMultiMap.putAll("parentName", Arrays.asList(18, 1));
-//                fieldWidthMultiMap.putAll("parentAgn", Arrays.asList(10, 1));
-//                fieldWidthMultiMap.putAll("operation", Arrays.asList(1, 1));
-//                fieldWidthMultiMap.putAll("clientExclInd", Arrays.asList(1, 1));
-//                fieldWidthMultiMap.putAll("exclEntityTypCde", Arrays.asList(25, 0));
-//                fieldWidthMultiMap.putAll("exclEntity", Arrays.asList(18, 0));
-//                fieldWidthMultiMap.putAll("exclEntityAgn", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("exclEastGroup", Arrays.asList(18, 0));
-//                fieldWidthMultiMap.putAll("networkType", Arrays.asList(3, 0));
-//                fieldWidthMultiMap.putAll("networkId", Arrays.asList(15, 0));
-//                fieldWidthMultiMap.putAll("chain", Arrays.asList(5, 0));
-//                fieldWidthMultiMap.putAll("chainName", Arrays.asList(35, 0));
-//                fieldWidthMultiMap.putAll("npiNumber", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("pharName", Arrays.asList(35, 0));
-//                fieldWidthMultiMap.putAll("state", Arrays.asList(2, 0));
-//                fieldWidthMultiMap.putAll("networkExcl", Arrays.asList(38));
-//                fieldWidthMultiMap.putAll("networkExclInd", Arrays.asList(1, 0));
-//                fieldWidthMultiMap.putAll("exclNetworkType", Arrays.asList(3, 0));
-//                fieldWidthMultiMap.putAll("exclNetworkId", Arrays.asList(15, 0));
-//                fieldWidthMultiMap.putAll("exclChain", Arrays.asList(5, 0));
-//                fieldWidthMultiMap.putAll("exclNpiNumber", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("exclState", Arrays.asList(2, 0));
-//                fieldWidthMultiMap.putAll("productType", Arrays.asList(20, 0));
-//                fieldWidthMultiMap.putAll("productAttribute", Arrays.asList(20, 0));
-//                fieldWidthMultiMap.putAll("productValue", Arrays.asList(20, 0));
-//                fieldWidthMultiMap.putAll("hierarchyType", Arrays.asList(1, 0));
-//                fieldWidthMultiMap.putAll("intentEndDate", Arrays.asList(10, 0));
-//                fieldWidthMultiMap.putAll("validFlagRec", Arrays.asList(1, 0));
-//                fieldWidthMultiMap.putAll("severity", Arrays.asList(18, 0));
-//                fieldWidthMultiMap.putAll("category", Arrays.asList(14, 0));
-//                fieldWidthMultiMap.putAll("message", Arrays.asList(500, 0));
-//                fieldWidthMultiMap.putAll("userAction", Arrays.asList(256, 0));
-//                fieldWidthMultiMap.putAll("procsStage", Arrays.asList(24, 0));
-//                fieldWidthMultiMap.putAll("source", Arrays.asList(6, 0));
