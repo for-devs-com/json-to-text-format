@@ -1,7 +1,6 @@
 package com.fordevs.jsontotextformat.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import lombok.extern.slf4j.Slf4j;
@@ -22,16 +21,15 @@ import java.util.Map;
 @Slf4j
 public class CitController {
 
-    @PostMapping(value = "/cit-mainframe-connector")
+    @PostMapping(value = "/cit-mainframe-job")
     public void citMainframeConnector(@RequestBody JsonNode jsonNode) {
 
         try {
-            StringBuilder citRules = new StringBuilder();
-            for (JsonNode citRule : jsonNode) {
-                citRules = getFieldsAndValuesFromJsonNode(citRule);
-            }
-            System.out.println(citRules);
-            bufferedWriter(citRules);
+            StringBuilder stringBuilderWithCopyBookFormat = new StringBuilder();
+            stringBuilderWithCopyBookFormat.append(getHeaderValuesFromJsonNode(jsonNode));
+            stringBuilderWithCopyBookFormat.append(getFieldValuesFromJsonNode(jsonNode.at("/citRules")));
+            System.out.println(stringBuilderWithCopyBookFormat);
+            bufferedWriter(stringBuilderWithCopyBookFormat);
 
             //TODO:SFTP to MainFrame
             //TODO: After SFTP to Mainframe delete text report file
@@ -54,28 +52,53 @@ public class CitController {
                 separatorWidth = Integer.parseInt(multimap.get(key).get(1));
             }
             offset = columnWidth + separatorWidth + offset;
-            totalBytes = totalBytes + offset;
+//            totalBytes = totalBytes + offset;
         }
     }
 
     //get all field values per each cit rule
-    public StringBuilder getFieldsAndValuesFromJsonNode(JsonNode jsonNode) throws IOException {
+    public StringBuilder getHeaderValuesFromJsonNode(JsonNode jsonNode) {
 
-        LinkedListMultimap<String, String> fieldLayoutProperties = LinkedListMultimap.create();
+        LinkedListMultimap<String, String> headerLayoutProperties = LinkedListMultimap.create();
+        headerLayoutProperties.putAll("flowId", Arrays.asList("36", "1", "-"));
+        headerLayoutProperties.putAll("ptmRequestId", Arrays.asList("10", "1", ""));
+        headerLayoutProperties.putAll("operId", Arrays.asList("8", "1", "-"));
+        headerLayoutProperties.putAll("recordCount", Arrays.asList("6", "1", ""));
+        headerLayoutProperties.putAll("validFlagFile", Arrays.asList("1", "1", ""));
+        headerLayoutProperties.putAll("severityF", Arrays.asList("18", "1", "-"));
+        headerLayoutProperties.putAll("categoryF", Arrays.asList("14", "1", ""));
+        headerLayoutProperties.putAll("messageF", Arrays.asList("500", "1", ""));
+        headerLayoutProperties.putAll("userActionF", Arrays.asList("256", "1", ""));
+        headerLayoutProperties.putAll("procsStageF", Arrays.asList("24", "1", ""));
+        headerLayoutProperties.putAll("sourceF", Arrays.asList("6", "1", ""));
+        //calculateOffsets(headerLayoutProperties);
+
+        StringBuilder headerRow = new StringBuilder();
+        Iterator<Map.Entry<String, JsonNode>> fields = jsonNode.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            String key = field.getKey();
+            JsonNode value = field.getValue();
+            if (headerLayoutProperties.containsKey(key)) {
+                String columnWidth = headerLayoutProperties.get(key).get(0);
+                String columnGapWidth = headerLayoutProperties.get(key).get(1);
+                //Integer offset = Integer.valueOf(headerLayoutProperties.get(key).get(2));
+                String ruleField = String.valueOf(formatRuleField(key, value.asText(), columnWidth, columnGapWidth));
+                headerRow.append(ruleField);
+            }
+        }
+        headerRow.append("\n");
+        return headerRow;
+    }
+
+    //get all field values per each cit rule
+    public StringBuilder getFieldValuesFromJsonNode(JsonNode rules) throws IOException {
+
         //ListMultimap<String, String> fieldLayoutProperties = ArrayListMultimap.create();
         //TODO:Make this configurable https://stackoverflow.com/questions/26275736/how-to-pass-a-mapstring-string-with-application-properties
         //TODO: Use MultiMapValue https://commons.apache.orag/proper/commons-collections/apidocs/org/apache/commons/collections4/MultiValuedMap.html
-        fieldLayoutProperties.putAll("flowId", Arrays.asList("36", "1"));  //offset = 0
-        fieldLayoutProperties.putAll("ptmRequestId", Arrays.asList("10", "1"));  //offset = 0 + 36 + 1 + 1 = 38
-        fieldLayoutProperties.putAll("operId", Arrays.asList("8", "1"));   //offset 38 + 8 + 1 + 1 = 48  offset = previousOffset + fieldWidth + separatorWidth + 1
-        fieldLayoutProperties.putAll("recordCount", Arrays.asList("6", "1"));
-        fieldLayoutProperties.putAll("validFlagFile", Arrays.asList("1", "1"));
-        fieldLayoutProperties.putAll("severityF", Arrays.asList("18", "1"));
-        fieldLayoutProperties.putAll("categoryF", Arrays.asList("14", "1"));
-        fieldLayoutProperties.putAll("messageF", Arrays.asList("500", "1"));
-        fieldLayoutProperties.putAll("userActionF", Arrays.asList("256", "1"));
-        fieldLayoutProperties.putAll("procsStageF", Arrays.asList("24", "1"));
-        fieldLayoutProperties.putAll("sourceF", Arrays.asList("6", "1"));
+
+        LinkedListMultimap<String, String> fieldLayoutProperties = LinkedListMultimap.create();
         fieldLayoutProperties.putAll("setUpChangeNumber", Arrays.asList("2", "1"));
         fieldLayoutProperties.putAll("rowNumber", Arrays.asList("10", "1"));
         fieldLayoutProperties.putAll("entityType", Arrays.asList("25", "1"));
@@ -141,39 +164,39 @@ public class CitController {
         arrayFieldLayoutProperties.putAll("productValue", Arrays.asList("20", ""));
 
         StringBuilder ruleRow = new StringBuilder();
-        Iterator<Map.Entry<String, JsonNode>> fields = jsonNode.fields();
-
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
-            String key = field.getKey();
-            JsonNode value = field.getValue();
-
-            if (value.isArray()) {
-                for (JsonNode arrayElement : value) {
-                    Iterator<Map.Entry<String, JsonNode>> arrayFields = arrayElement.fields();
-                    while (arrayFields.hasNext()) {
-                        Map.Entry<String, JsonNode> arrayField = arrayFields.next();
-                        String arrayKey = arrayField.getKey();
-                        String arrayValue = arrayField.getValue().asText();
-                        if (arrayFieldLayoutProperties.containsKey(arrayKey)) {
-                            String columnWidth = arrayFieldLayoutProperties.get(arrayKey).get(0);
-                            String columnGapWidth = arrayFieldLayoutProperties.get(arrayKey).get(1);
-                            String ruleField = String.valueOf(formatRuleField(arrayKey, arrayValue, columnWidth, columnGapWidth));
-                            ruleRow.append(ruleField);
+        for (JsonNode rule : rules) {
+            Iterator<Map.Entry<String, JsonNode>> fields = rule.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> field = fields.next();
+                String key = field.getKey();
+                JsonNode value = field.getValue();
+                if (value.isArray()) {
+                    for (JsonNode arrayElement : value) {
+                        Iterator<Map.Entry<String, JsonNode>> arrayFields = arrayElement.fields();
+                        while (arrayFields.hasNext()) {
+                            Map.Entry<String, JsonNode> arrayField = arrayFields.next();
+                            String arrayKey = arrayField.getKey();
+                            String arrayValue = arrayField.getValue().asText();
+                            if (arrayFieldLayoutProperties.containsKey(arrayKey)) {
+                                String columnWidth = arrayFieldLayoutProperties.get(arrayKey).get(0);
+                                String columnGapWidth = arrayFieldLayoutProperties.get(arrayKey).get(1);
+                                String ruleField = String.valueOf(formatRuleField(arrayKey, arrayValue, columnWidth, columnGapWidth));
+                                ruleRow.append(ruleField);
+                            }
                         }
                     }
-                }
-            } else {
-                if (fieldLayoutProperties.containsKey(key)) {
-                    String columnWidth = fieldLayoutProperties.get(key).get(0);
-                    String columnGapWidth = fieldLayoutProperties.get(key).get(1);
-                    Integer offset = Integer.valueOf(fieldLayoutProperties.get(key).get(2));
-                    String ruleField = String.valueOf(formatRuleField(key, value.asText(), columnWidth, columnGapWidth));
-                    ruleRow.insert(offset, ruleField);
+                } else {
+                    if (fieldLayoutProperties.containsKey(key)) {
+                        String columnWidth = fieldLayoutProperties.get(key).get(0);
+                        String columnGapWidth = fieldLayoutProperties.get(key).get(1);
+                        Integer offset = Integer.valueOf(fieldLayoutProperties.get(key).get(2));
+                        String ruleField = String.valueOf(formatRuleField(key, value.asText(), columnWidth, columnGapWidth));
+                        ruleRow.insert(offset, ruleField);
+                    }
                 }
             }
+            ruleRow.append("\n");
         }
-        ruleRow.append("\n");
         return ruleRow;
     }
 
