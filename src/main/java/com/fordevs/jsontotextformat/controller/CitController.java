@@ -60,6 +60,7 @@ public class CitController {
     public StringBuilder getHeaderValuesFromJsonNode(JsonNode jsonNode) {
 
         LinkedListMultimap<String, String> headerLayoutProperties = LinkedListMultimap.create();
+        //fieldWidth, separatorWidth, leftAlign
         headerLayoutProperties.putAll("flowId", Arrays.asList("36", "1", "-"));
         headerLayoutProperties.putAll("ptmRequestId", Arrays.asList("10", "1", ""));
         headerLayoutProperties.putAll("operId", Arrays.asList("8", "1", "-"));
@@ -70,7 +71,7 @@ public class CitController {
         headerLayoutProperties.putAll("messageF", Arrays.asList("500", "1", ""));
         headerLayoutProperties.putAll("userActionF", Arrays.asList("256", "1", ""));
         headerLayoutProperties.putAll("procsStageF", Arrays.asList("24", "1", ""));
-        headerLayoutProperties.putAll("sourceF", Arrays.asList("6", "1", ""));
+        headerLayoutProperties.putAll("sourceF", Arrays.asList("6", "1252", ""));
         //calculateOffsets(headerLayoutProperties);
 
         StringBuilder headerRow = new StringBuilder();
@@ -83,6 +84,7 @@ public class CitController {
                 String columnWidth = headerLayoutProperties.get(key).get(0);
                 String columnGapWidth = headerLayoutProperties.get(key).get(1);
                 //Integer offset = Integer.valueOf(headerLayoutProperties.get(key).get(2));
+                //TODO: Erase key
                 String ruleField = String.valueOf(formatRuleField(key, value.asText(), columnWidth, columnGapWidth));
                 headerRow.append(ruleField);
             }
@@ -92,6 +94,7 @@ public class CitController {
     }
 
     //get all field values per each cit rule
+    //valuesOfColumns
     public StringBuilder getFieldValuesFromJsonNode(JsonNode rules) throws IOException {
 
         //ListMultimap<String, String> fieldLayoutProperties = ArrayListMultimap.create();
@@ -103,7 +106,7 @@ public class CitController {
         fieldLayoutProperties.putAll("rowNumber", Arrays.asList("10", "1"));
         fieldLayoutProperties.putAll("entityType", Arrays.asList("25", "1"));
         fieldLayoutProperties.putAll("entityOpId", Arrays.asList("18", "1"));
-        fieldLayoutProperties.putAll("entityAgn", Arrays.asList("25", "1"));
+        fieldLayoutProperties.putAll("entityAgn", Arrays.asList("10", "1"));
         fieldLayoutProperties.putAll("eastGrpOpId", Arrays.asList("18", "1"));
         fieldLayoutProperties.putAll("srceEntity", Arrays.asList("18", "1"));
         fieldLayoutProperties.putAll("srceEntityGr", Arrays.asList("18", "1"));
@@ -116,10 +119,6 @@ public class CitController {
         fieldLayoutProperties.putAll("operation", Arrays.asList("1", "1"));
         fieldLayoutProperties.putAll("clientExclInd", Arrays.asList("1", "1"));
         fieldLayoutProperties.putAll("clientExcl", Arrays.asList("105", "")); //this is an array
-//        fieldLayoutProperties.putAll("exclEntityTypCde", Arrays.asList("2", ""));
-//        fieldLayoutProperties.putAll("exclEntity", Arrays.asList("18", ""));
-//        fieldLayoutProperties.putAll("exclEntityAgn", Arrays.asList("10", ""));
-//        fieldLayoutProperties.putAll("exclEastGroup", Arrays.asList("18", ""));
         fieldLayoutProperties.putAll("networkType", Arrays.asList("3", ""));
         fieldLayoutProperties.putAll("networkId", Arrays.asList("15", ""));
         fieldLayoutProperties.putAll("chain", Arrays.asList("5", ""));
@@ -128,14 +127,8 @@ public class CitController {
         fieldLayoutProperties.putAll("pharName", Arrays.asList("35", ""));
         fieldLayoutProperties.putAll("state", Arrays.asList("2", ""));
         fieldLayoutProperties.putAll("networkExcl", Arrays.asList("360", "")); // array
-//        fieldLayoutProperties.putAll("exclEntityTypCde", Arrays.asList("2", ""));
-//        fieldLayoutProperties.putAll("exclEntity", Arrays.asList("18", ""));
-//        fieldLayoutProperties.putAll("exclEntityAgn", Arrays.asList("10", ""));
-//        fieldLayoutProperties.putAll("exclEastGroup", Arrays.asList("18", ""));
         fieldLayoutProperties.putAll("productType", Arrays.asList("20", ""));
         fieldLayoutProperties.putAll("productDetail", Arrays.asList("120", "")); //array
-//        fieldLayoutProperties.putAll("productAttribute", Arrays.asList("20", ""));
-//        fieldLayoutProperties.putAll("productValue", Arrays.asList("20", ""));
         fieldLayoutProperties.putAll("hierarchyType", Arrays.asList("1", ""));
         fieldLayoutProperties.putAll("intentEndDate", Arrays.asList("10", ""));
         fieldLayoutProperties.putAll("validFlagRec", Arrays.asList("1", ""));
@@ -148,18 +141,15 @@ public class CitController {
         calculateOffsets(fieldLayoutProperties);
 
         LinkedListMultimap<String, String> arrayFieldLayoutProperties = LinkedListMultimap.create();
-        //ListMultimap<String, String> arrayFieldLayoutProperties = ArrayListMultimap.create();
         arrayFieldLayoutProperties.putAll("exclEntityTypCde", Arrays.asList("2", ""));
         arrayFieldLayoutProperties.putAll("exclEntity", Arrays.asList("18", ""));
         arrayFieldLayoutProperties.putAll("exclEntityAgn", Arrays.asList("10", ""));
         arrayFieldLayoutProperties.putAll("exclEastGroup", Arrays.asList("18", ""));
-
         arrayFieldLayoutProperties.putAll("exclNetworkType", Arrays.asList("3", ""));
         arrayFieldLayoutProperties.putAll("exclNetworkId", Arrays.asList("15", ""));
         arrayFieldLayoutProperties.putAll("exclChain", Arrays.asList("5", ""));
         arrayFieldLayoutProperties.putAll("exclNpiNumber", Arrays.asList("10", ""));
         arrayFieldLayoutProperties.putAll("exclState", Arrays.asList("2", ""));
-
         arrayFieldLayoutProperties.putAll("productAttribute", Arrays.asList("20", ""));
         arrayFieldLayoutProperties.putAll("productValue", Arrays.asList("20", ""));
 
